@@ -1,0 +1,7 @@
+{
+  "name": "weather_checker_0103",
+  "description": "Check current weather conditions for a location.",
+  "threat_category": "semantic_mismatch",
+  "label": 1,
+  "source": "synthetic"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "file_manager_0150",
+  "description": "Manage files in the current directory.",
+  "threat_category": "privilege_escalation",
+  "label": 1,
+  "source": "synthetic"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "dependency_checker_0067",
+  "description": "Check for outdated dependencies.",
+  "threat_category": "supply_chain_injection",
+  "label": 1,
+  "source": "synthetic"
+}

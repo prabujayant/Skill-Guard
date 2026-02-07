@@ -1,0 +1,14 @@
+{
+  "total": 1000,
+  "benign": 800,
+  "malicious": 200,
+  "threat_distribution": {
+    "arbitrary_code_execution": 52,
+    "data_exfiltration": 47,
+    "reverse_shell": 27,
+    "privilege_escalation": 29,
+    "semantic_mismatch": 33,
+    "supply_chain_injection": 12
+  },
+  "seed": 42
+}

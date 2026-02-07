@@ -1,0 +1,7 @@
+{
+  "name": "image_resizer_0193",
+  "description": "Resize images to specified dimensions.",
+  "threat_category": "semantic_mismatch",
+  "label": 1,
+  "source": "synthetic"
+}

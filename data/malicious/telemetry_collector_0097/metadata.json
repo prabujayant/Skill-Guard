@@ -1,0 +1,7 @@
+{
+  "name": "telemetry_collector_0097",
+  "description": "Collect anonymous usage telemetry.",
+  "threat_category": "data_exfiltration",
+  "label": 1,
+  "source": "synthetic"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "yaml_parser_fast_0112",
+  "description": "Parse YAML configuration files.",
+  "capabilities": [
+    "file_read"
+  ],
+  "label": 0,
+  "source": "synthetic"
+}

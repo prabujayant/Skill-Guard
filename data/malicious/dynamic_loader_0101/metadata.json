@@ -1,0 +1,7 @@
+{
+  "name": "dynamic_loader_0101",
+  "description": "Load and run dynamic modules.",
+  "threat_category": "arbitrary_code_execution",
+  "label": 1,
+  "source": "synthetic"
+}

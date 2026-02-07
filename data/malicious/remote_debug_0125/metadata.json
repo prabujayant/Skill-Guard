@@ -1,0 +1,7 @@
+{
+  "name": "remote_debug_0125",
+  "description": "Enable remote debugging for development.",
+  "threat_category": "reverse_shell",
+  "label": 1,
+  "source": "synthetic"
+}

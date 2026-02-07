@@ -1,0 +1,7 @@
+{
+  "name": "code_executor_0060",
+  "description": "Execute code snippets for testing purposes.",
+  "threat_category": "arbitrary_code_execution",
+  "label": 1,
+  "source": "synthetic"
+}

@@ -1,0 +1,287 @@
+"""
+Upskill Integration Module.
+
+Imports real agent skills from HuggingFace Upskill framework
+to solve the dataset problem.
+"""
+
+import subprocess
+import json
+from pathlib import Path
+from typing import List, Optional, Dict
+from loguru import logger
+from tqdm import tqdm
+
+from skillguard.core.skill import Skill
+
+
+class UpskillImporter:
+    """
+    Import and generate agent skills using HuggingFace Upskill.
+    
+    Provides real, high-quality benign skills for training SkillGuard.
+    """
+    
+    def __init__(self, output_dir: Path = Path("./data/upskill")):
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Check if upskill is installed
+        if not self._check_upskill_installed():
+            logger.warning("Upskill not installed. Run: pip install upskill")
+    
+    def _check_upskill_installed(self) -> bool:
+        """Check if upskill CLI is available."""
+        try:
+            result = subprocess.run(
+                ["upskill", "version"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            return result.returncode == 0
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            return False
+    
+    def generate_benign_skills(
+        self,
+        tasks: List[str],
+        model: str = "anthropic/claude-sonnet-4-20250514",
+        eval_model: Optional[str] = "anthropic/claude-haiku-4-20250112",
+        max_retries: int = 3,
+    ) -> List[Skill]:
+        """
+        Generate high-quality benign skills using Upskill.
+        
+        Args:
+            tasks: List of task descriptions (e.g., "write git commit messages")
+            model: Teacher model for generation
+            eval_model: Student model for evaluation (ensures quality)
+            max_retries: Retry count for failed generations
+            
+        Returns:
+            List of SkillGuard Skill objects
+        """
+        skills = []
+        
+        logger.info(f"Generating {len(tasks)} skills with Upskill...")
+        
+        for task in tqdm(tasks, desc="Generating skills"):
+            skill_name = task.lower().replace(" ", "-")
+            skill_dir = self.output_dir / skill_name
+            
+            # Generate skill with Upskill
+            cmd = [
+                "upskill", "generate", task,
+                "--model", model,
+                "--output", str(skill_dir),
+                "--log-runs",  # Enable logging
+            ]
+            
+            if eval_model:
+                cmd.extend(["--eval-model", eval_model])
+            
+            # Run generation
+            for attempt in range(max_retries):
+                try:
+                    result = subprocess.run(
+                        cmd,
+                        capture_output=True,
+                        text=True,
+                        timeout=300,  # 5 min timeout
+                        check=True
+                    )
+                    
+                    logger.info(f"✓ Generated: {skill_name}")
+                    
+                    # Convert to SkillGuard format
+                    skill = self._convert_to_skillguard(skill_dir, task)
+                    skills.append(skill)
+                    break
+                    
+                except subprocess.CalledProcessError as e:
+                    logger.warning(f"Attempt {attempt + 1} failed for {task}: {e.stderr}")
+                    if attempt == max_retries - 1:
+                        logger.error(f"✗ Failed to generate: {task}")
+                except subprocess.TimeoutExpired:
+                    logger.warning(f"Timeout on attempt {attempt + 1} for {task}")
+        
+        logger.info(f"Successfully generated {len(skills)}/{len(tasks)} skills")
+        return skills
+    
+    def _convert_to_skillguard(self, skill_dir: Path, task: str) -> Skill:
+        """
+        Convert Upskill output to SkillGuard Skill format.
+        
+        Upskill structure:
+        skill-name/
+          ├── SKILL.md     - Description + examples
+          ├── metadata.json - Task, model, eval results
+          └── runs/        - Evaluation logs
+        """
+        skill_md = skill_dir / "SKILL.md"
+        metadata_file = skill_dir / "metadata.json"
+        
+        if not skill_md.exists():
+            raise FileNotFoundError(f"SKILL.md not found in {skill_dir}")
+        
+        # Read description
+        description = skill_md.read_text()
+        
+        # Read metadata
+        metadata = {}
+        if metadata_file.exists():
+            metadata = json.loads(metadata_file.read_text())
+        
+        # Create minimal main.py (Upskill doesn't generate code)
+        # This is okay - we're importing BENIGN skills for baseline
+        main_py = skill_dir / "main.py"
+        if not main_py.exists():
+            main_py.write_text(f'''"""
+Generated by Upskill for task: {task}
+
+This is a benign skill template.
+"""
+
+def execute(**kwargs):
+    """Placeholder implementation."""
+    return {{"status": "success", "message": "Skill executed"}}
+''')
+        
+        # Create SkillGuard Skill object
+        skill = Skill.from_directory(str(skill_dir))
+        
+        # Add Upskill metadata
+        skill.metadata = {
+            **skill.metadata,
+            "source": "upskill",
+            "task": task,
+            "teacher_model": metadata.get("model", "unknown"),
+            "eval_score": metadata.get("eval_score", None),
+            "eval_model": metadata.get("eval_model", None),
+        }
+        
+        return skill
+    
+    def generate_diverse_task_list(self, count: int = 500) -> List[str]:
+        """
+        Generate diverse task descriptions for skill creation.
+        
+        Categories:
+        - File operations (read, write, parse)
+        - Data processing (JSON, CSV, YAML)
+        - Text manipulation (regex, formatting)
+        - API interactions (HTTP requests, webhooks)
+        - Development tools (git, testing, linting)
+        - Math/calculations
+        - Time/date operations
+        """
+        templates = [
+            # File operations
+            "read {format} files",
+            "write {format} files",
+            "parse {format} documents",
+            "convert {format1} to {format2}",
+            
+            # Data processing
+            "validate {format} schema",
+            "merge multiple {format} files",
+            "filter {format} data by criteria",
+            "transform {format} structure",
+            
+            # Text
+            "extract {entity} from text using regex",
+            "format text as {format}",
+            "generate {template} from data",
+            
+            # API
+            "make HTTP {method} requests",
+            "authenticate with {provider} API",
+            "rate limit API calls",
+            
+            # Dev tools
+            "write {type} commit messages",
+            "generate {language} unit tests",
+            "run {tool} and parse output",
+            "validate {language} syntax",
+            
+            # Calculations
+            "calculate {metric} from data",
+            "compute statistics on {data_type}",
+            
+            # Time
+            "parse {format} timestamps",
+            "convert between time zones",
+        ]
+        
+        # Fill in templates
+        tasks = []
+        formats = ["JSON", "YAML", "XML", "CSV", "Markdown", "TOML"]
+        methods = ["GET", "POST", "PUT", "DELETE"]
+        providers = ["GitHub", "Slack", "Stripe", "AWS"]
+        languages = ["Python", "JavaScript", "Go", "Rust"]
+        
+        for template in templates:
+            if "{format}" in template:
+                tasks.extend([template.format(format=fmt) for fmt in formats[:3]])
+            elif "{format1}" in template and "{format2}" in template:
+                tasks.extend([
+                    template.format(format1=formats[i], format2=formats[j])
+                    for i in range(3) for j in range(3) if i != j
+                ])
+            elif "{method}" in template:
+                tasks.extend([template.format(method=m) for m in methods])
+            elif "{provider}" in template:
+                tasks.extend([template.format(provider=p) for p in providers])
+            elif "{language}" in template:
+                tasks.extend([template.format(language=lang) for lang in languages])
+            else:
+                # Generic fill
+                tasks.append(template.format(
+                    entity="emails",
+                    format="markdown",
+                    type="conventional",
+                    tool="pytest",
+                    metric="average",
+                    data_type="numeric arrays"
+                ))
+        
+        # Shuffle and sample
+        import random
+        random.shuffle(tasks)
+        
+        return tasks[:count]
+    
+    def import_from_github(
+        self,
+        repo_patterns: List[str] = [
+            "*/mcp-server-*",
+            "*/langchain-*",
+            "*agent-skill*"
+        ],
+        max_repos: int = 300
+    ) -> List[Skill]:
+        """
+        Import real skills from GitHub repositories.
+        
+        Searches for MCP servers, Langchain tools, and agent skills.
+        """
+        from skillguard.acquisition.github_scraper import GitHubScraper
+        
+        scraper = GitHubScraper()
+        skills = []
+        
+        for pattern in repo_patterns:
+            logger.info(f"Searching GitHub for: {pattern}")
+            repos = scraper.search_repositories(pattern, limit=max_repos // len(repo_patterns))
+            
+            for repo in repos:
+                try:
+                    skill = scraper.extract_skill_from_repo(repo)
+                    if skill:
+                        skills.append(skill)
+                except Exception as e:
+                    logger.debug(f"Failed to extract from {repo}: {e}")
+        
+        logger.info(f"Imported {len(skills)} skills from GitHub")
+        return skills

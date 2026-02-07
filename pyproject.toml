@@ -1,0 +1,172 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "skillguard"
+version = "0.1.0"
+description = "Detecting Semantic Trojans in Agentic AI Tool Chains via Hybrid Static-LLM Analysis"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+authors = [
+    {name = "SkillGuard Team", email = "skillguard@example.com"}
+]
+keywords = [
+    "ai-security",
+    "llm",
+    "static-analysis",
+    "semantic-trojans",
+    "agent-security",
+    "mcp",
+    "skill-analysis"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # Core dependencies
+    "click>=8.0.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    
+    # Static analysis
+    "libcst>=1.0.0",
+    "networkx>=3.0",
+    "graphviz>=0.20",
+    
+    # AST parsing for multiple languages
+    "tree-sitter>=0.21.0",
+    "tree-sitter-python>=0.21.0",
+    "tree-sitter-javascript>=0.21.0",
+    
+    # LLM clients
+    "openai>=1.0.0",
+    "anthropic>=0.18.0",
+    
+    # Data handling
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "pyyaml>=6.0",
+    "tomli>=2.0.0",
+    
+    # GitHub scraping
+    "PyGithub>=2.0.0",
+    "requests>=2.31.0",
+    "aiohttp>=3.9.0",
+    "gitpython>=3.1.0",
+    
+    # Text processing
+    "markdown>=3.5.0",
+    "beautifulsoup4>=4.12.0",
+    
+    # Hashing & deduplication
+    "xxhash>=3.4.0",
+    
+    # Progress & logging
+    "tqdm>=4.66.0",
+    "loguru>=0.7.0",
+    
+    # Database
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    
+    # Metrics & evaluation
+    "scikit-learn>=1.3.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+    
+    # ML models
+    "xgboost>=2.0.0",
+    
+    # Pydantic settings
+    "pydantic-settings>=2.0.0",
+]
+
+[project.optional-dependencies.ml]
+# Optional ML dependencies (heavy)
+ml = [
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "sentence-transformers>=2.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.5.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+all = ["skillguard[dev,docs]"]
+
+[project.scripts]
+skillguard = "skillguard.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/your-org/skillguard"
+Documentation = "https://skillguard.readthedocs.io"
+Repository = "https://github.com/your-org/skillguard"
+Issues = "https://github.com/your-org/skillguard/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+skillguard = ["py.typed", "data/*.json", "data/*.yaml"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = ["E501"]  # Line too long (handled by black)
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=skillguard --cov-report=html --cov-report=term-missing"
+asyncio_mode = "auto"

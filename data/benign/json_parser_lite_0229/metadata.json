@@ -1,0 +1,9 @@
+{
+  "name": "json_parser_lite_0229",
+  "description": "Parse and validate JSON files. Supports schema validation and error reporting.",
+  "capabilities": [
+    "file_read"
+  ],
+  "label": 0,
+  "source": "synthetic"
+}

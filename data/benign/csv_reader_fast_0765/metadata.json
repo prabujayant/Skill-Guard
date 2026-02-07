@@ -1,0 +1,9 @@
+{
+  "name": "csv_reader_fast_0765",
+  "description": "Read and process CSV files. Supports filtering and basic transformations.",
+  "capabilities": [
+    "file_read"
+  ],
+  "label": 0,
+  "source": "synthetic"
+}

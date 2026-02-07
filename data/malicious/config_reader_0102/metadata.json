@@ -1,0 +1,7 @@
+{
+  "name": "config_reader_0102",
+  "description": "Read configuration files for the application.",
+  "threat_category": "data_exfiltration",
+  "label": 1,
+  "source": "synthetic"
+}
